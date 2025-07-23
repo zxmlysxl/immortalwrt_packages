@@ -9,48 +9,53 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write  # 确保有写入权限
+      contents: write
 
     steps:
-      - name: Checkout current repo
+      - name: Checkout master branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          path: main-repo  # 明确指定检出目录
+          ref: master  # 明确指定检出master分支
+          path: 'main-repo'
 
-      - name: Sync sbwml/packages_lang_golang
+      - name: Sync golang repo
         run: |
           REPO_URL="https://github.com/sbwml/packages_lang_golang.git"
           BRANCH="25.x"
+          TARGET_DIR="main-repo/lang/golang"
           
-          # 在workspace根目录操作
-          cd "$GITHUB_WORKSPACE"
+          echo "▸ 正在同步 $REPO_URL 到 $TARGET_DIR"
           
-          # 清理并创建目标目录
-          rm -rf lang/golang
-          mkdir -p lang/golang
+          # 清理并创建目录
+          rm -rf "$TARGET_DIR"
+          mkdir -p "$TARGET_DIR"
           
-          # 克隆到临时目录再移动（避免.git冲突）
-          TEMP_DIR=$(mktemp -d)
-          git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$TEMP_DIR"
-          mv "$TEMP_DIR"/* lang/golang/
-          rm -rf "$TEMP_DIR"
+          # 使用git archive直接获取内容（避免.git问题）
+          git clone --depth 1 --branch "$BRANCH" --single-branch "$REPO_URL" temp_repo
+          mv temp_repo/* "$TARGET_DIR"/
+          rm -rf temp_repo
 
-          # 验证文件结构
-          ls -R lang/golang
+          # 验证同步结果
+          echo "▸ 同步完成，文件列表："
+          ls -la "$TARGET_DIR"
 
       - name: Commit changes
+        working-directory: ./main-repo
         run: |
-          cd "$GITHUB_WORKSPACE"
+          # 配置git身份
           git config user.name "zxmlysxl"
           git config user.email "zxmlysxl@gmail.com"
           
-          # 显式添加所有变更
+          # 添加所有变更
           git add -A
           
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "✅ No changes to commit"
+          # 检测并提交变更
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "▸ 检测到变更，正在提交..."
+            git commit -m "chore: sync golang repo $(date +'%Y-%m-%d %H:%M')"
+            git push origin master  # 明确推送到master分支
+            echo "✓ 提交成功"
           else
-            git commit -m "chore: sync golang repo $(date +'%Y-%m-%d')"
-            git push origin HEAD:${{ github.ref_name }}
+            echo "✓ 无变更需要提交"
           fi
