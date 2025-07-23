@@ -1,47 +1,56 @@
 name: Sync Golang Repo
 on:
   schedule:
-    - cron: '0 0 * * *'  # 每天 UTC 0 点自动运行
-  workflow_dispatch:     # 支持手动触发
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   sync-repo:
     runs-on: ubuntu-latest
-    timeout-minutes: 5   # 超时时间 5 分钟足够
+    timeout-minutes: 5
+    permissions:
+      contents: write  # 确保有写入权限
 
     steps:
       - name: Checkout current repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          path: main-repo  # 明确指定检出目录
 
       - name: Sync sbwml/packages_lang_golang
         run: |
-          # 设置目标仓库和分支
           REPO_URL="https://github.com/sbwml/packages_lang_golang.git"
-          TARGET_DIR="lang/golang"
           BRANCH="25.x"
+          
+          # 在workspace根目录操作
+          cd "$GITHUB_WORKSPACE"
+          
+          # 清理并创建目标目录
+          rm -rf lang/golang
+          mkdir -p lang/golang
+          
+          # 克隆到临时目录再移动（避免.git冲突）
+          TEMP_DIR=$(mktemp -d)
+          git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$TEMP_DIR"
+          mv "$TEMP_DIR"/* lang/golang/
+          rm -rf "$TEMP_DIR"
 
-          # 删除旧数据（如果存在）
-          rm -rf "$TARGET_DIR" 2>/dev/null || true
-          mkdir -p "$TARGET_DIR"
-
-          # 克隆目标仓库（仅最新 commit）
-          echo "🔄 Syncing $REPO_URL (branch: $BRANCH)..."
-          git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$TARGET_DIR"
-
-          # 删除 .git 文件夹避免冲突
-          rm -rf "$TARGET_DIR/.git"
+          # 验证文件结构
+          ls -R lang/golang
 
       - name: Commit changes
         run: |
+          cd "$GITHUB_WORKSPACE"
           git config user.name "zxmlysxl"
           git config user.email "zxmlysxl@gmail.com"
-
-          if git diff --quiet; then
+          
+          # 显式添加所有变更
+          git add -A
+          
+          if [ -z "$(git status --porcelain)" ]; then
             echo "✅ No changes to commit"
           else
-            git add .
             git commit -m "chore: sync golang repo $(date +'%Y-%m-%d')"
-            git push
+            git push origin HEAD:${{ github.ref_name }}
           fi
