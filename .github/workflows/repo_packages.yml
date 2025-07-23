@@ -1,60 +1,47 @@
 name: Sync Golang Repo
 on:
   schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
+    - cron: '0 0 * * *'  # 每天 UTC 0 点自动运行
+  workflow_dispatch:     # 支持手动触发
 
 jobs:
-  sync:
+  sync-repo:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
+    timeout-minutes: 5   # 超时时间 5 分钟足够
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout current repo
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sync sbwml/packages_lang_golang
         run: |
-          # 配置目标路径和分支
+          # 设置目标仓库和分支
           REPO_URL="https://github.com/sbwml/packages_lang_golang.git"
-          DEST_DIR="lang/golang"
+          TARGET_DIR="lang/golang"
           BRANCH="25.x"
 
-          # 清理旧数据（可选）
-          rm -rf "$DEST_DIR" || true
-          mkdir -p "$DEST_DIR"
+          # 删除旧数据（如果存在）
+          rm -rf "$TARGET_DIR" 2>/dev/null || true
+          mkdir -p "$TARGET_DIR"
 
-          # 克隆仓库（浅克隆节省时间）
-          echo "🔁 正在克隆 $REPO_URL (分支: $BRANCH)..."
-          git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$DEST_DIR" || {
-            echo "❌ 克隆失败，尝试默认分支..."
-            git clone --depth 1 "$REPO_URL" "$DEST_DIR"
-            cd "$DEST_DIR"
-            git checkout "$BRANCH" || {
-              echo "⚠️ 分支 $BRANCH 不存在，使用默认分支"
-              git checkout -b "$BRANCH" origin/HEAD
-            }
-            cd -
-          }
+          # 克隆目标仓库（仅最新 commit）
+          echo "🔄 Syncing $REPO_URL (branch: $BRANCH)..."
+          git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$TARGET_DIR"
 
-          # 清理.git目录（避免冲突）
-          rm -rf "$DEST_DIR/.git"
+          # 删除 .git 文件夹避免冲突
+          rm -rf "$TARGET_DIR/.git"
 
-          echo "✅ 同步完成！"
-
-      - name: Commit Changes
-        if: success()
+      - name: Commit changes
         run: |
           git config user.name "zxmlysxl"
           git config user.email "zxmlysxl@gmail.com"
-          git add .
-          if git diff --cached --quiet; then
-            echo "🟢 无变更需要提交"
+
+          if git diff --quiet; then
+            echo "✅ No changes to commit"
           else
-            git commit -m "Sync: sbwml/packages_lang_golang $(date +'%Y-%m-%d')"
-            git push origin main
+            git add .
+            git commit -m "chore: sync golang repo $(date +'%Y-%m-%d')"
+            git push
           fi
