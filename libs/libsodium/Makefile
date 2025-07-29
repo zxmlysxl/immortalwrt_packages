@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libsodium
-PKG_VERSION:=1.0.20
+PKG_VERSION:=1.0.19
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
@@ -24,6 +24,9 @@ PKG_BUILD_FLAGS:=no-mips16
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
+
+# 添加 C11 标准支持
+TARGET_CFLAGS += -std=c11
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -57,7 +60,8 @@ endef
 
 CONFIGURE_ARGS+= \
 	--disable-ssp \
-	$(if $(CONFIG_LIBSODIUM_MINIMAL),--enable,--disable)-minimal
+	$(if $(CONFIG_LIBSODIUM_MINIMAL),--enable,--disable)-minimal \
+	CFLAGS="-std=c11 $(TARGET_CFLAGS)"  # 确保传递给 configure
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/sodium
@@ -72,6 +76,11 @@ endef
 define Package/libsodium/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libsodium.so.* $(1)/usr/lib/
+endef
+
+# 添加补丁处理（可选）
+define Patch/libsodium
+	$(SED) 's|static TLS|static __thread|g' $(1)/src/libsodium/randombytes/internal/randombytes_internal_random.c
 endef
 
 $(eval $(call BuildPackage,libsodium))
