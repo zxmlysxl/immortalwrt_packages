@@ -11,14 +11,14 @@ include $(TOPDIR)/rules.mk
 include ../python3-version.mk
 
 PKG_NAME:=python3
-PKG_RELEASE:=2
+PKG_RELEASE:=1
 PKG_VERSION:=$(PYTHON3_VERSION).$(PYTHON3_VERSION_MICRO)
 
 PKG_SOURCE:=Python-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://www.python.org/ftp/python/$(PKG_VERSION)
-PKG_HASH:=ed5ef34cda36cfa2f3a340f07cac7e7814f91c7f3c411f6d3562323a866c5c66
+PKG_HASH:=d923c51303e38e249136fc1bdf3568d56ecb03214efdef48516176d3d7faaef8
 
-PKG_MAINTAINER:=Jeffery To <jeffery.to@gmail.com>, Alexandru Ardelean <ardeleanalex@gmail.com>
+PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
 PKG_LICENSE:=Python-2.0.1 0BSD
 PKG_LICENSE_FILES:=LICENSE Doc/copyright.rst Doc/license.rst Modules/_ctypes/darwin/LICENSE Modules/_ctypes/libffi_osx/LICENSE Modules/expat/COPYING
 PKG_CPE_ID:=cpe:/a:python:python
@@ -35,7 +35,7 @@ PKG_BUILD_PARALLEL:=1
 HOST_BUILD_PARALLEL:=1
 # LTO is handled here individually, see --with-lto below
 # "no-lto" prevents CONFIG_USE_LTO to add additional and interfering flags
-PKG_BUILD_FLAGS:=no-lto
+PKG_BUILD_FLAGS:=no-mips16 no-lto
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/Python-$(PKG_VERSION)
 HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/Python-$(PKG_VERSION)
@@ -96,7 +96,7 @@ endef
 define Package/python3-light
 $(call Package/python3/Default)
   TITLE+= light installation
-  DEPENDS:=+python3-base +libbz2 +zlib +USE_GLIBC:libcrypt-compat
+  DEPENDS:=+python3-base +libbz2 +zlib +libzstd +USE_GLIBC:libcrypt-compat
 endef
 
 define Package/python3-light/config

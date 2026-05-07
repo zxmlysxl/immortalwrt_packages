@@ -9,16 +9,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-zope-interface
-PKG_VERSION:=8.0.1
+PKG_VERSION:=8.3
 PKG_RELEASE:=1
 
 PYPI_NAME:=zope.interface
 PYPI_SOURCE_NAME:=zope_interface
-PKG_HASH:=eba5610d042c3704a48222f7f7c6ab5b243ed26f917e2bc69379456b115e02d1
+PKG_HASH:=e1a9de7d0b5b5c249a73b91aebf4598ce05e334303af6aa94865893283e9ff10
 
 PKG_LICENSE:=ZPL-2.1
 PKG_LICENSE_FILES:=LICENSE.txt
-PKG_MAINTAINER:=Jeffery To <jeffery.to@gmail.com>
+PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
 
 PKG_BUILD_DEPENDS:= \
 	python3/host \

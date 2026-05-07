@@ -11,9 +11,9 @@ PKG_MAINTAINER:=Chester A. Unal <chester.a.unal@arinc9.com>
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/bondingshouldbefree/bsbf-resources.git
-PKG_SOURCE_DATE:=2026-03-09
-PKG_SOURCE_VERSION:=4d8b5138a44d4df21b42f0e2c694c50b10b50173
-PKG_MIRROR_HASH:=de7645897e1cfbc8c50afc81e6a6942aec2bf65d19a62cfd18a24e93ad5f4030
+PKG_SOURCE_DATE:=2026-03-24
+PKG_SOURCE_VERSION:=e75046628f430c584a6f3ef12fbef4b87fad5aa4
+PKG_MIRROR_HASH:=16dd14add99ae73a473d967330509b0308076ef63e4608c78b43248a274a79a3
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -21,6 +21,7 @@ define Package/bsbf-mptcp
   SECTION:=net
   CATEGORY:=Network
   TITLE:=bsbf-mptcp
+  URL:=https://github.com/bondingshouldbefree/
   DEPENDS:=+fping +ip-full
 endef
 
@@ -28,18 +29,36 @@ define Package/bsbf-netspeed
   SECTION:=net
   CATEGORY:=Network
   TITLE:=bsbf-netspeed
+  URL:=https://github.com/bondingshouldbefree/
+endef
+
+define Package/bsbf-plpmtu
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=bsbf-plpmtu
+  URL:=https://github.com/bondingshouldbefree/
+  DEPENDS:=+fping +plp-mtu-discovery
 endef
 
 define Package/bsbf-quectel-usbnet
   SECTION:=net
   CATEGORY:=Network
   TITLE:=bsbf-quectel-usbnet
+  URL:=https://github.com/bondingshouldbefree/
+endef
+
+define Package/bsbf-rate-limiting
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=bsbf-rate-limiting
+  URL:=https://github.com/bondingshouldbefree/
 endef
 
 define Package/bsbf-route
   SECTION:=net
   CATEGORY:=Network
   TITLE:=bsbf-route
+  URL:=https://github.com/bondingshouldbefree/
   DEPENDS:=+fping
 endef
 
@@ -47,6 +66,7 @@ define Package/bsbf-tcp-in-udp
   SECTION:=net
   CATEGORY:=Network
   TITLE:=bsbf-tcp-in-udp
+  URL:=https://github.com/bondingshouldbefree/
   DEPENDS:=+ethtool +tc-full +tcp-in-udp
 endef
 
@@ -73,12 +93,25 @@ define Package/bsbf-netspeed/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/resources-client/bsbf-netspeed $(1)/usr/sbin
 endef
 
+define Package/bsbf-plpmtu/install
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface
+	$(INSTALL_BIN) ./files/etc/hotplug.d/iface/99-bsbf-plpmtu $(1)/etc/hotplug.d/iface
+
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/resources-shared/bsbf-plpmtu $(1)/usr/sbin
+endef
+
 define Package/bsbf-quectel-usbnet/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/etc/init.d/bsbf-quectel-usbnet $(1)/etc/init.d
 
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/resources-client/bsbf-quectel-usbnet $(1)/usr/sbin
+endef
+
+define Package/bsbf-rate-limiting/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/resources-client/bsbf-rate-limiting $(1)/usr/sbin
 endef
 
 define Package/bsbf-route/install
@@ -99,6 +132,8 @@ endef
 
 $(eval $(call BuildPackage,bsbf-mptcp))
 $(eval $(call BuildPackage,bsbf-netspeed))
+$(eval $(call BuildPackage,bsbf-plpmtu))
 $(eval $(call BuildPackage,bsbf-quectel-usbnet))
+$(eval $(call BuildPackage,bsbf-rate-limiting))
 $(eval $(call BuildPackage,bsbf-route))
 $(eval $(call BuildPackage,bsbf-tcp-in-udp))

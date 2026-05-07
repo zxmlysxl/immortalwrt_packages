@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=lua-eco
-PKG_VERSION:=3.14.0
+PKG_VERSION:=3.17.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL=https://github.com/zhaojh329/lua-eco/releases/download/v$(PKG_VERSION)
-PKG_HASH:=b5e00132bbfe9ce981f5b925f575979bf923c9447d8f3ca8b8a84fc7a7b4411e
+PKG_HASH:=d14066e0f80f4d16c1ea3070de72c016b18475766d3f931315ff567506787b10
 
 PKG_MAINTAINER:=Jianhui Zhao <zhaojh329@gmail.com>
 PKG_LICENSE:=MIT
@@ -72,7 +72,7 @@ Package/lua-eco-net=$(call Package/lua-eco/Module,net,+lua-eco-packet +lua-eco-d
 define Package/lua-eco-ssl/config
 	choice
 		prompt "SSL Library"
-		default LUA_ECO_MBEDTLS
+		default LUA_ECO_OPENSSL
 
 		config LUA_ECO_OPENSSL
 			bool "OpenSSL"

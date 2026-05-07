@@ -1,17 +1,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=coredns
-PKG_VERSION:=1.14.1
-PKG_RELEASE:=1
+PKG_VERSION:=1.14.3
+PKG_RELEASE:=2
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/coredns/coredns.git
-PKG_MIRROR_HASH:=be51352801f5455ac0a7f3c97adaa86587bb2343f50ee2779f48121c96e2f4f9
+PKG_MIRROR_HASH:=9d4304f736454b719a55c910a3b906010be51c1a4adba67f9fde23394ffdba41
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Vladimir Ermakov <vooon341@gmail.com>
+PKG_CPE_ID:=cpe:/a:coredns.io:coredns
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
@@ -53,10 +54,9 @@ define Package/coredns/conffiles
 endef
 
 define configure-plugin
-	$(SED) '/^$(2):/d' "$(PKG_BUILD_DIR)/plugin.cfg"
-ifeq ($(1),y)
-	echo "$(2):$(3)" >> "$(PKG_BUILD_DIR)/plugin.cfg"
-endif
+	$(if $(filter y,$(1)),\
+		grep -q '^$(2):' "$(PKG_BUILD_DIR)/plugin.cfg" || echo "$(2):$(3)" >> "$(PKG_BUILD_DIR)/plugin.cfg",\
+		$(SED) '/^$(2):/d' "$(PKG_BUILD_DIR)/plugin.cfg")
 endef
 
 define Build/Configure
@@ -73,6 +73,7 @@ define Build/Configure
 	$(call configure-plugin,$(CONFIG_COREDNS_PLUGIN_KUBERNETES),kubernetes,kubernetes)
 	$(call configure-plugin,$(CONFIG_COREDNS_PLUGIN_ETCD),etcd,etcd)
 	$(call configure-plugin,$(CONFIG_COREDNS_PLUGIN_GRPC),grpc,grpc)
+	$(call configure-plugin,$(CONFIG_COREDNS_PLUGIN_PROXYPROTO),proxyproto,proxyproto)
 	$(call configure-plugin,$(CONFIG_COREDNS_PLUGIN_ON),on,github.com/coredns/caddy/onevent)
 	$(call configure-plugin,$(CONFIG_COREDNS_PLUGIN_NOMAD),nomad,nomad)
 	$(call configure-plugin,$(CONFIG_COREDNS_PLUGIN_WGSD),wgsd,github.com/jwhited/wgsd)
@@ -92,6 +93,15 @@ ifeq ($(CONFIG_COREDNS_REQUIRE_GO_GET),y)
 	$(GO_PKG_BUILD_CONFIG_VARS) \
 	$(GO_PKG_VARS) \
 	go get ./...
+endif
+ifeq ($(CONFIG_COREDNS_PLUGIN_WGSD),y)
+	# wgsd -> wgctrl -> genetlink -> netlink v1.6.2 is incompatible with
+	# socket v0.5.x (Sendmsg/Recvmsg gained context.Context); pin to v1.7.2
+	cd $(PKG_BUILD_DIR); \
+	$(GO_GENERAL_BUILD_CONFIG_VARS) \
+	$(GO_PKG_BUILD_CONFIG_VARS) \
+	$(GO_PKG_VARS) \
+	go get github.com/mdlayher/netlink@v1.7.2
 endif
 
 endef

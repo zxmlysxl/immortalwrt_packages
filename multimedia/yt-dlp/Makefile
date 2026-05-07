@@ -3,11 +3,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=yt-dlp
-PKG_VERSION:=2026.3.3
-PKG_RELEASE:=1
+PKG_VERSION:=2026.3.17
+PKG_RELEASE:=2
 
 PYPI_NAME:=yt-dlp
-PKG_HASH:=3db7969e3a8964dc786bdebcffa2653f31123bf2a630f04a17bdafb7bbd39952
+PKG_HASH:=ba7aa31d533f1ffccfe70e421596d7ca8ff0bf1398dc6bb658b7d9dec057d2c9
 PYPI_SOURCE_NAME:=yt_dlp
 
 PKG_MAINTAINER:=George Sapkin <george@sapk.in>
@@ -32,7 +32,6 @@ define Package/yt-dlp
     +python3-asyncio \
     +python3-codecs \
     +python3-ctypes \
-    +python3-email \
     +python3-logging \
     +python3-openssl \
     +python3-sqlite3 \

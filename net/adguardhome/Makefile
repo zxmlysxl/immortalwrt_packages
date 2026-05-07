@@ -3,17 +3,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=adguardhome
-PKG_VERSION:=0.107.72
-PKG_RELEASE:=3
+PKG_VERSION:=0.107.74
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/AdguardTeam/AdGuardHome/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=8f6d1cba4a7b7e986840f2a7dbaeb0dd9af51b60a49fa709cf30b9beba841c76
+PKG_HASH:=abce6463c4e0072051c6c66c4b03d3798f234c168438db9b6d3394b7df2870f2
 PKG_BUILD_DIR:=$(BUILD_DIR)/AdGuardHome-$(PKG_VERSION)
 
 FRONTEND_DEST:=$(PKG_NAME)-frontend-$(PKG_VERSION).tar.gz
 FRONTEND_URL:=https://github.com/AdguardTeam/AdGuardHome/releases/download/v$(PKG_VERSION)/
-FRONTEND_HASH:=bfdedb78b10269d2b263fcea658b24ee7597770be1ca635d56f6419f825dfecc
+FRONTEND_HASH:=bca5a8a4d777f984d9a6992214dc158cb35c12e6fd6fd61a30f677896aaa1758
 
 PKG_LICENSE:=GPL-3.0-only
 PKG_LICENSE_FILES:=LICENSE.txt
@@ -74,7 +74,7 @@ define Package/adguardhome/install
 	$(INSTALL_CONF) ./files/adguardhome.json $(1)/etc/capabilities/adguardhome.json
 
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) ./files/adguardhome.config $(1)/etc/config/adguardhome
+	$(INSTALL_CONF) ./files/adguardhome.conf $(1)/etc/config/adguardhome
 
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/adguardhome.init $(1)/etc/init.d/adguardhome
